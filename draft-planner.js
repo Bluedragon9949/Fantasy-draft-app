@@ -1,4 +1,11 @@
 (function(){
+  const extra=[["Tucker Kraft","TE","GB"],["George Kittle","TE","SF"],["Dallas Goedert","TE","PHI"],["Travis Kelce","TE","KC"],["J.K. Dobbins","RB","DEN"],["Kyle Monangai","RB","CHI"],["Jacory Croskey-Merritt","RB","WAS"],["Rachaad White","RB","WAS"],["Jake Ferguson","TE","DAL"],["Mark Andrews","TE","BAL"],["T.J. Hockenson","TE","MIN"],["Quentin Johnston","WR","LAC"],["Josh Downs","WR","IND"],["Deebo Samuel Sr.","WR","SF"],["Aaron Jones Sr.","RB","MIN"],["Isaiah Likely","TE","NYG"],["Dalton Kincaid","TE","BUF"],["Keon Coleman","TE","NYJ"],["Hunter Henry","TE","NE"],["Jordan Mason","RB","MIN"],["Blake Corum","RB","LAR"],["RJ Harvey","RB","DEN"],["Woody Marks","RB","HOU"],["Stefon Diggs","WR","WAS"],["Makai Lemon","WR","PHI"],["KC Concepcion","WR","CLE"],["Chris Godwin Jr.","WR","TB"],["Romeo Doubs","WR","NE"],["De'Zhaun Stribling","WR","SF"],["Jayden Higgins","WR","HOU"],["Jalen Coker","WR","CAR"],["Rashid Shaheed","WR","SEA"],["Kyler Murray","QB","MIN"],["Tyler Shough","QB","NO"],["Jared Goff","QB","DET"],["Daniel Jones","QB","IND"],["Zach Charbonnet","RB","SEA"],["Alvin Kamara","RB","NO"],["Tyjae Spears","RB","TEN"],["Chris Rodriguez Jr.","RB","JAC"],["Tyrone Tracy Jr.","RB","NYG"],["Brian Robinson Jr.","RB","ATL"],["Denzel Boston","WR","CLE"],["Jerry Jeudy","WR","CLE"],["Jalen McMillan","WR","TB"],["Calvin Ridley","WR","TEN"],["Caleb Douglas","WR","MIA"],["Adonai Mitchell","WR","NYJ"],["Baker Mayfield","QB","TB"],["Malik Willis","QB","MIA"],["Travis Hunter","WR","JAC"],["Jordyn Tyson","WR","NO"],["Tre Tucker","WR","LV"],["Tyler Allgeier","RB","ARI"],["Keaton Mitchell","RB","LAC"],["Isiah Pacheco","RB","DET"],["Jonah Coleman","RB","DEN"],["Tank Bigsby","RB","PHI"],["Terrance Ferguson","TE","LAR"],["Juwan Johnson","TE","NO"],["Jalen Nailor","WR","LV"],["Rashod Bateman","WR","BAL"],["Ja'Kobi Lane","WR","BAL"],["Dontayvion Wicks","WR","PHI"],["Keenan Allen","WR","IND"],["Ray Davis","RB","BUF"],["Dylan Sampson","RB","CLE"],["Mike Washington Jr.","RB","LV"],["Texans D/ST","D/ST","HOU"],["Broncos D/ST","D/ST","DEN"],["Steelers D/ST","D/ST","PIT"],["Seahawks D/ST","D/ST","SEA"],["Rams D/ST","D/ST","LAR"],["Ravens D/ST","D/ST","BAL"],["Eagles D/ST","D/ST","PHI"],["Browns D/ST","D/ST","CLE"],["Patriots D/ST","D/ST","NE"],["Lions D/ST","D/ST","DET"],["Chiefs D/ST","D/ST","KC"],["Chargers D/ST","D/ST","LAC"],["Brandon Aubrey","K","DAL"],["Cameron Dicker","K","LAC"],["Jason Myers","K","SEA"],["Harrison Mevis","K","LAR"],["Ka'imi Fairbairn","K","HOU"],["Eddy Pineiro","K","SF"],["Harrison Butker","K","KC"],["Cam Little","K","JAC"],["Jake Bates","K","DET"],["Tyler Loop","K","BAL"],["Cairo Santos","K","CHI"],["Will Reichard","K","MIN"],["Braelon Allen","RB","NYJ"],["Brenton Strange","TE","JAC"],["Justice Hill","RB","BAL"],["MarShawn Lloyd","RB","GB"],["Devaughn Vele","WR","NO"],["Jordan Love","QB","GB"],["C.J. Stroud","QB","HOU"],["Sam Darnold","QB","SEA"]];
+  extra.forEach((x,i)=>P.push({id:'p'+(101+i),rank:101+i,name:x[0],position:x[1],team:x[2],espnId:'',sleeperId:''}));
+  const title=document.querySelector('h1');if(title)title.textContent='🏈 ESPN PPR Top 200';
+  drawTabs=function(){const a=['ALL','QB','RB','WR','TE','K','D/ST'];tabs.innerHTML=a.map(x=>`<button class="tab ${x===filter?'active':''}" data-f="${x}">${x}</button>`).join('');tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{filter=b.dataset.f;drawTabs();render()})};
+  render=function(){const q=search.value.trim().toLowerCase();const arr=P.filter(p=>(filter==='ALL'||p.position===filter)&&(!q||(p.name+' '+p.team+' '+p.position).toLowerCase().includes(q)));list.innerHTML=arr.map(p=>{const is=!!taken[p.id];return `<button class="player ${is?'taken':''}" data-id="${p.id}"><div class="rank">${p.rank}</div>${photoHtml(p)}<div class="playerInfo"><div class="name">${p.name}</div><div class="meta">${p.position} · ${p.team}</div></div><div class="mark">${is?'TAKEN':'AVAILABLE'}</div></button>`}).join('');wirePhotoFallbacks();list.querySelectorAll('.player').forEach(b=>b.onclick=()=>toggle(b.dataset.id));const n=Object.values(taken).filter(Boolean).length;counter.textContent=n+' taken · '+(P.length-n)+' left'};
+  drawTabs();render();
+
   const SETTINGS_KEY='fantasy-draft-planner-v1';
   const teamsEl=document.getElementById('leagueTeams');
   const slotEl=document.getElementById('draftSlot');
@@ -6,31 +13,8 @@
   if(!teamsEl||!slotEl||!picksEl)return;
   let saved={teams:10,slot:1};
   try{saved=Object.assign(saved,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'))}catch(e){}
-  function fillSlots(){
-    const n=Number(teamsEl.value)||10;
-    const old=Math.min(Number(slotEl.value)||saved.slot||1,n);
-    slotEl.innerHTML='';
-    for(let i=1;i<=n;i++){
-      const o=document.createElement('option');o.value=i;o.textContent='Pick '+i;slotEl.appendChild(o);
-    }
-    slotEl.value=old;
-  }
-  function renderPicks(){
-    const n=Number(teamsEl.value)||10;
-    const slot=Number(slotEl.value)||1;
-    const picks=[];
-    for(let r=1;r<=16;r++){
-      const roundSlot=r%2===1?slot:(n-slot+1);
-      const overall=(r-1)*n+roundSlot;
-      picks.push('<span class="pickChip"><b>R'+r+'</b> #'+overall+'</span>');
-    }
-    picksEl.innerHTML=picks.join('');
-    try{localStorage.setItem(SETTINGS_KEY,JSON.stringify({teams:n,slot:slot}))}catch(e){}
-  }
+  function fillSlots(){const n=Number(teamsEl.value)||10;const old=Math.min(Number(slotEl.value)||saved.slot||1,n);slotEl.innerHTML='';for(let i=1;i<=n;i++){const o=document.createElement('option');o.value=i;o.textContent='Pick '+i;slotEl.appendChild(o)}slotEl.value=old}
+  function renderPicks(){const n=Number(teamsEl.value)||10;const slot=Number(slotEl.value)||1;const picks=[];for(let r=1;r<=16;r++){const roundSlot=r%2===1?slot:(n-slot+1);const overall=(r-1)*n+roundSlot;picks.push('<span class="pickChip"><b>R'+r+'</b> #'+overall+'</span>')}picksEl.innerHTML=picks.join('');try{localStorage.setItem(SETTINGS_KEY,JSON.stringify({teams:n,slot:slot}))}catch(e){}}
   teamsEl.innerHTML=[8,10,12,14].map(n=>'<option value="'+n+'">'+n+' teams</option>').join('');
-  teamsEl.value=String([8,10,12,14].includes(Number(saved.teams))?saved.teams:10);
-  fillSlots();slotEl.value=String(Math.min(Number(saved.slot)||1,Number(teamsEl.value)));
-  teamsEl.addEventListener('change',function(){fillSlots();renderPicks()});
-  slotEl.addEventListener('change',renderPicks);
-  renderPicks();
+  teamsEl.value=String([8,10,12,14].includes(Number(saved.teams))?saved.teams:10);fillSlots();slotEl.value=String(Math.min(Number(saved.slot)||1,Number(teamsEl.value)));teamsEl.addEventListener('change',function(){fillSlots();renderPicks()});slotEl.addEventListener('change',renderPicks);renderPicks();
 })();
